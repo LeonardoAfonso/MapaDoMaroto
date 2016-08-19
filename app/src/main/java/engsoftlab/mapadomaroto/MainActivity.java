@@ -137,13 +137,19 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            switch(position){
+                case 0: return PerfilFragment.newInstance();
+                case 1: return MapaFragment.newInstance();
+                case 2: return ChatFragment.newInstance();
+            }
+            //return PlaceholderFragment.newInstance(position + 1);]
+            return null;
         }
 
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 4;
+            return 3;
         }
 
         @Override
@@ -152,10 +158,8 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return "PERFIL";
                 case 1:
-                    return "TRENDS";
-                case 2:
                     return "MAPA";
-                case 3:
+                case 2:
                     return "CHAT";
             }
             return null;
