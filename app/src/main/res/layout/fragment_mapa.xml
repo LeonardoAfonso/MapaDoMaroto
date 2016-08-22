@@ -9,5 +9,22 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="@string/hello_blank_fragment" />
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/llContainer"
+        android:orientation="vertical">
+
+        <!--fragment
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:id="@+id/fragment"
+        android:layout_gravity="center" /-->
+
+    </LinearLayout>
+
+
 
 </FrameLayout>
