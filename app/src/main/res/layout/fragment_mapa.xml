@@ -5,14 +5,17 @@
     tools:context="engsoftlab.mapadomaroto.MapaFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
-    
+
     <LinearLayout
+        android:layout_margin="20px"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/SuperContainer"
+        android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
         android:id="@+id/llContainer"
         android:orientation="vertical">
 
@@ -25,6 +28,27 @@
 
     </LinearLayout>
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Adicionar Ponto"
+            android:id="@+id/addButton"
+           />
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ver Pontos"
+            android:id="@+id/seeButton"
+             />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/tap_text"
+            />
+
+    </LinearLayout>
 
 </FrameLayout>
