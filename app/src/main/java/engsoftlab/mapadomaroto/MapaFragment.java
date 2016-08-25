@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -120,7 +121,18 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         MarkerOptions options = new MarkerOptions();
         options.position(latlng).title(title).snippet(snippet);
         marker = map.addMarker(options);
+        //map.addMarker(options);
+        //marker = null;
     }
+
+    public void customAddStaticMarker(LatLng latlng, String title, String snippet){
+        MarkerOptions options = new MarkerOptions();
+        options.position(latlng).title(title).snippet(snippet);
+        //marker = map.addMarker(options);
+        map.addMarker(options);
+        //marker = null;
+    }
+
 
     @Override
     public void onCameraIdle() {
@@ -134,7 +146,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         if(marker !=null){
             marker.remove();
         }
-        customAddMarker(new LatLng(latLng.latitude,latLng.longitude),"Titulo", "Teste");
+        customAddMarker(new LatLng(latLng.latitude,latLng.longitude),"", "");
     }
 
     @Override
@@ -154,7 +166,30 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     {
         myDialog = new Dialog(getContext());
         myDialog.setContentView(R.layout.dialog_form_layout);
-        myDialog.setCancelable(false);
+        Button btnCancelar = (Button) myDialog.findViewById(R.id.btnCancelar);
+        btnCancelar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myDialog.dismiss();
+                marker.remove();
+            }
+        });
+
+        Button btnSalvar = (Button) myDialog.findViewById(R.id.btnSalvar);
+        final EditText edtDesc = (EditText) myDialog.findViewById(R.id.edtDesc);
+        final EditText  edtTipo = (EditText) myDialog.findViewById(R.id.edtTipo);
+        btnSalvar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getContext(),"Irá pegar as informações e salva-las no servidor",Toast.LENGTH_SHORT).show();
+                customAddStaticMarker(new LatLng(marker.getPosition().latitude,marker.getPosition().longitude),edtTipo.getText().toString(),"Descrição: "+edtDesc.getText().toString());
+                myDialog.dismiss();
+                marker.remove();
+                marker = null;
+            }
+        });
+
+        myDialog.setCancelable(true);
         myDialog.show();
     }
 
