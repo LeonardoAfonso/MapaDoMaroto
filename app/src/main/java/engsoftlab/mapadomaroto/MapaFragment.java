@@ -38,6 +38,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     private TextView mTapTextView;
     private Button addButton;
     private Button seeButton;
+    private Button canButton;
     private Dialog myDialog;
 
     public static MapaFragment newInstance(){
@@ -66,6 +67,10 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         seeButton = (Button) root.findViewById(R.id.seeButton);
         addButton.setOnClickListener(this);
 
+        canButton = (Button) root.findViewById(R.id.canButton);
+
+        canButton.setOnClickListener(this);
+
         mapFragment = SupportMapFragment.newInstance(options);
         mapFragment.getMapAsync(this);
 
@@ -92,6 +97,14 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         } else {
             callDialog();
             Toast.makeText(getContext(), "Ponto Marcado Lat: " + marker.getPosition().latitude + " Lng: " + marker.getPosition().longitude, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void canButtonMtd(){
+        if(marker != null){
+            marker.remove();
+            marker=null;
+            canButton.setVisibility(View.GONE);
         }
     }
 
@@ -147,6 +160,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
             marker.remove();
         }
         customAddMarker(new LatLng(latLng.latitude,latLng.longitude),"", "");
+        canButton.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -158,6 +172,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     public void onClick(View v) {
         switch(v.getId()){
             case R.id.addButton:addButtonMtd();break;
+            case R.id.canButton:canButtonMtd();break;
         }
     }
 
@@ -172,6 +187,8 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
             public void onClick(View v) {
                 myDialog.dismiss();
                 marker.remove();
+                marker = null;
+                canButton.setVisibility(View.GONE);
             }
         });
 
@@ -186,6 +203,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
                 myDialog.dismiss();
                 marker.remove();
                 marker = null;
+                canButton.setVisibility(View.GONE);
             }
         });
 

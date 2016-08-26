@@ -38,6 +38,14 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Cancelar"
+            android:id="@+id/canButton"
+            android:visibility="gone"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Ver Pontos"
             android:id="@+id/seeButton"
              />
