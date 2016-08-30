@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="300dp"
-    android:layout_height="350dp">
+    android:layout_height="350dp"
+    android:background="@drawable/shape">
 
     <TextView
         android:layout_width="wrap_content"
@@ -9,10 +10,21 @@
         android:text="Tipo do Problema"
         android:id="@+id/txtTipo" />
 
-    <EditText
+    <Spinner
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/edtTipo" />
+        android:id="@+id/pontoSpn" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Situação"
+        android:id="@+id/txtSituação" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/situacaoSpn" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -24,17 +36,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/edtDesc" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hora"
-        android:id="@+id/txtHora" />
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/edtHora" />
 
     <Button
         android:layout_width="wrap_content"

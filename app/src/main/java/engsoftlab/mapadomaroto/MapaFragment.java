@@ -2,6 +2,8 @@ package engsoftlab.mapadomaroto;
 
 
 import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -9,9 +11,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,13 +28,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapClickListener, OnMapLongClickListener, OnCameraIdleListener, View.OnClickListener{
+public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapClickListener, OnMapLongClickListener, GoogleMap.InfoWindowAdapter ,GoogleMap.OnInfoWindowClickListener,OnCameraIdleListener, View.OnClickListener{
     private SupportMapFragment mapFragment;
     //private LinearLayout superContainer;
     private Marker marker;
@@ -40,6 +46,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     private Button seeButton;
     private Button canButton;
     private Dialog myDialog;
+    private Dialog infoDialog;
 
     public static MapaFragment newInstance(){
         MapaFragment fragment = new MapaFragment();
@@ -114,6 +121,8 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         map.setOnMapClickListener(this);
         map.setOnMapLongClickListener(this);
         map.setOnCameraIdleListener(this);
+        map.setOnInfoWindowClickListener(this);
+        map.setInfoWindowAdapter(this);
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(new LatLng(-1.4749331,-48.4555419),15);
         map.moveCamera(update);
         map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
@@ -138,12 +147,50 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         //marker = null;
     }
 
-    public void customAddStaticMarker(LatLng latlng, String title, String snippet){
+    public void customAddStaticMarker(LatLng latlng, String title, String snippet,String estado){
         MarkerOptions options = new MarkerOptions();
         options.position(latlng).title(title).snippet(snippet);
+
+        switch(title) {
+            case "Bebedouro":
+                switch(estado){
+                    case "Ruim": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.fountainicon_bad));break;
+                    case "Medio": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.fountainicon_warning));break;
+                    case "Bom": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.fountainicon_good));break;
+                };break;
+            case "Banheiro Masculino":
+                switch(estado){
+                    case "Ruim": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.wcicon_bad_masc));break;
+                    case "Medio": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.wcicon_warning_masc));break;
+                    case "Bom": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.wcicon_good_masc));break;
+                };break;
+            case "Banheiro Feminino":
+                switch(estado){
+                    case "Ruim": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.wcicon_bad));break;
+                    case "Medio": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.wcicon_warning));break;
+                    case "Bom": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.wcicon_good));break;
+                };break;
+            case "Ponto de Acessibilidade":
+                switch(estado){
+                    case "Ruim": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.accessibilityicon_bad));break;
+                    case "Medio": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.accessibilityicon_warning));break;
+                    case "Bom": options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.accessibilityicon_good));break;
+                };break;
+            default:
+        }
+
+
+        //options.icon(BitmapDescriptorFactory.fromResource(R.mipmap.wcicon_bad_masc));
+
+
+
+
         //marker = map.addMarker(options);
         map.addMarker(options);
         //marker = null;
+
+
+
     }
 
 
@@ -181,6 +228,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     {
         myDialog = new Dialog(getContext());
         myDialog.setContentView(R.layout.dialog_form_layout);
+        myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         Button btnCancelar = (Button) myDialog.findViewById(R.id.btnCancelar);
         btnCancelar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,13 +241,24 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         });
 
         Button btnSalvar = (Button) myDialog.findViewById(R.id.btnSalvar);
+        final Spinner pontoSpn = (Spinner) myDialog.findViewById(R.id.pontoSpn);
+        ArrayAdapter <CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),R.array.tipo_pontos_array,android.R.layout.simple_spinner_dropdown_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        pontoSpn.setAdapter(adapter);
+
+        final Spinner situacaoSpn = (Spinner) myDialog.findViewById(R.id.situacaoSpn);
+        ArrayAdapter <CharSequence> adapterSit = ArrayAdapter.createFromResource(getContext(),R.array.estado_pontos_array,android.R.layout.simple_spinner_dropdown_item);
+        adapterSit.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        situacaoSpn.setAdapter(adapterSit);
+
         final EditText edtDesc = (EditText) myDialog.findViewById(R.id.edtDesc);
-        final EditText  edtTipo = (EditText) myDialog.findViewById(R.id.edtTipo);
+        //final EditText  edtTipo = (EditText) myDialog.findViewById(R.id.edtTipo);
+        final String snpt = "Estado: "+situacaoSpn.getSelectedItem().toString()+"\nDescrição: "+edtDesc.getText().toString();
         btnSalvar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getContext(),"Irá pegar as informações e salva-las no servidor",Toast.LENGTH_SHORT).show();
-                customAddStaticMarker(new LatLng(marker.getPosition().latitude,marker.getPosition().longitude),edtTipo.getText().toString(),"Descrição: "+edtDesc.getText().toString());
+                customAddStaticMarker(new LatLng(marker.getPosition().latitude,marker.getPosition().longitude),pontoSpn.getSelectedItem().toString(),snpt,situacaoSpn.getSelectedItem().toString());
                 myDialog.dismiss();
                 marker.remove();
                 marker = null;
@@ -211,5 +270,25 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         myDialog.show();
     }
 
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        infoDialog = new Dialog(getContext());
+        infoDialog.setContentView(R.layout.dialog_info_layout);
+        infoDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        infoDialog.setCancelable(true);
+        infoDialog.show();
+    }
 
+    @Override
+    public View getInfoWindow(Marker marker) {
+        TextView tv = new TextView(getContext());
+        tv.setText(marker.getSnippet());
+        tv.setBackgroundColor(Color.WHITE);
+        return tv;
+    }
+
+    @Override
+    public View getInfoContents(Marker marker) {
+        return null;
+    }
 }
