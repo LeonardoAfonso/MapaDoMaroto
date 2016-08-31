@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +48,8 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     private Button canButton;
     private Dialog myDialog;
     private Dialog infoDialog;
+    private ListView mListaMensagens;
+    private ArrayAdapter<CharSequence> mAdapter;
 
     public static MapaFragment newInstance(){
         MapaFragment fragment = new MapaFragment();
@@ -275,6 +278,10 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         infoDialog = new Dialog(getContext());
         infoDialog.setContentView(R.layout.dialog_info_layout);
         infoDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        mListaMensagens = (ListView) infoDialog.findViewById(R.id.listView2);
+        mAdapter = ArrayAdapter.createFromResource(getContext(),R.array.tipo_pontos_array,android.R.layout.simple_spinner_dropdown_item);
+
+        mListaMensagens.setAdapter(mAdapter);
         infoDialog.setCancelable(true);
         infoDialog.show();
     }

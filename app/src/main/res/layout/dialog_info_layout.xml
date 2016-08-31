@@ -3,10 +3,46 @@
     android:orientation="vertical" android:layout_width="300dp"
     android:layout_height="350dp"
     android:background="@drawable/shape">
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/ic_launcher"
+            android:id="@+id/imageView"
+            android:contentDescription="@string/image" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/button" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Button"
+            android:id="@+id/button"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Button"
+            android:id="@+id/button2"
+                   />
+
+
+        <ScrollView
+            android:layout_width="250dp"
+            android:layout_height="150dp"
+            android:id="@+id/scrollView"
+            android:fillViewport="true">
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/listView2" />
+
+        </ScrollView>
+
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Button"
+            android:id="@+id/button3"
+            />
+
 </LinearLayout>
