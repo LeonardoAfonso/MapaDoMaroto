@@ -25,7 +25,7 @@ public class ChatFragment extends Fragment implements View.OnClickListener {
     private ListView mListaMensagens;
     private ArrayAdapter<String> mAdapter;
     private Socket mSocket;
-    private String url = "http://192.168.1.129";
+    private String url = "http://192.168.100.160";
 
     public static ChatFragment newInstance() {
         ChatFragment fragment = new ChatFragment();

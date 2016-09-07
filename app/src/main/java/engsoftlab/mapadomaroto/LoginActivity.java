@@ -3,7 +3,9 @@ package engsoftlab.mapadomaroto;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -86,7 +88,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private String name;
     private String email;
     private String birthday;
+    private String userId;
     private String gender;
+    private String prefs = "prefs";
+    private SharedPreferences sp;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,9 +134,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         callbackManager = CallbackManager.Factory.create();
 
+        sp = getSharedPreferences(prefs, Context.MODE_PRIVATE);
+
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
-            public void onSuccess(LoginResult loginResult) {
+            public void onSuccess(final LoginResult loginResult) {
 
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
@@ -143,23 +151,33 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 // Application code
                                 //Fazer a captura de dados aqui, ja que esta sendo executado assincornamente.
                                 try {
+                                    SharedPreferences.Editor edt = sp.edit();
                                     name = object.getString("name");
                                     email = object.getString("email");
                                     birthday = object.getString("birthday");
                                     gender = object.getString("gender");
-                                    info.setText("Nome: "+name+
-                                                "\nEmail: "+email+
-                                                "\nNascimento: "+birthday+
-                                                "\nGenero: "+gender);// 01/31/1980 format
+                                    userId = object.getString("id");
+                                    edt.putString("name", name);
+                                    edt.putString("email",email);
+                                    edt.putString("nasc",birthday);
+                                    edt.putString("sexo",gender);
+                                    edt.putString("userId",userId);
+                                    edt.commit();
+//                                    info.setText("Nome: "+name+
+//                                                "\nEmail: "+email+
+//                                                "\nNascimento: "+birthday+
+//                                                "\nGenero: "+gender+
+//                                                "\nUser ID: "+userId);// 01/31/1980 format
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
                             }
                         });
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,name,email,gender,birthday");
+                parameters.putString("fields","id,name,email,gender,birthday");
                 request.setParameters(parameters);
                 request.executeAsync();
+
 
                 // App code
 
@@ -184,6 +202,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         callbackManager.onActivityResult(requestCode, resultCode, data);
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 
 
