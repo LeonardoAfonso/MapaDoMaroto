@@ -1,87 +1,87 @@
 package engsoftlab.mapadomaroto;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
+//import android.animation.Animator;
+//import android.animation.AnimatorListenerAdapter;
+//import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
+//import android.content.pm.PackageManager;
+//import android.support.annotation.NonNull;
+//import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
+//import android.app.LoaderManager.LoaderCallbacks;
 
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
+//import android.content.CursorLoader;
+//import android.content.Loader;
+//import android.database.Cursor;
+//import android.net.Uri;
+//import android.os.AsyncTask;
 
-import android.os.Build;
+//import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.text.TextUtils;
+//import android.provider.ContactsContract;
+//import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
+//import android.view.KeyEvent;
+//import android.view.View;
+//import android.view.View.OnClickListener;
+//import android.view.inputmethod.EditorInfo;
+//import android.widget.ArrayAdapter;
+//import android.widget.AutoCompleteTextView;
+//import android.widget.Button;
+//import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
+//import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
-import com.facebook.Profile;
-import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
-import static android.Manifest.permission.READ_CONTACTS;
+import java.util.HashMap;
+//import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends AppCompatActivity {//implements LoaderCallbacks<Cursor> {
 
     /**
      * Id to identity READ_CONTACTS permission request.
-     */
+     *
     private static final int REQUEST_READ_CONTACTS = 0;
 
     /**
      * A dummy authentication store containing known user names and passwords.
      * TODO: remove after connecting to a real authentication system.
-     */
+     *
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
     };
-    /**
+    *
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
+    //private UserLoginTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
-    private View mProgressView;
-    private View mLoginFormView;
+    //private AutoCompleteTextView mEmailView;
+    //private EditText mPasswordView;
+    //private View mProgressView;
+    //private View mLoginFormView;
     private LoginButton loginButton;
     private CallbackManager callbackManager;
     private TextView info;
@@ -92,14 +92,27 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private String gender;
     private String prefs = "prefs";
     private SharedPreferences sp;
+    AccessTokenTracker accessTokenTracker;
+    private HashMap<String, String> params;
+    private String url;
+    private RequestQueue rq;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
+
+        accessTokenTracker = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken newAccessToken) {
+                updateWithToken(newAccessToken);
+            }
+        };
+
         setContentView(R.layout.activity_login);
-        // Set up the login form.
+
+        /* Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
@@ -121,11 +134,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             public void onClick(View view) {
                 attemptLogin();
             }
-        });
+        });*/
 
+        updateWithToken(AccessToken.getCurrentAccessToken());
 
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
+        //mLoginFormView = findViewById(R.id.login_form);
+        //mProgressView = findViewById(R.id.login_progress);
         info = (TextView) findViewById(R.id.info);
 
         loginButton = (LoginButton)findViewById(R.id.login_button);
@@ -133,6 +147,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 "public_profile", "email", "user_birthday"));
 
         callbackManager = CallbackManager.Factory.create();
+        url = "http://10.113.75.53:8888/MapadoMaroto/cadastroUsuario.php";
+        rq = Volley.newRequestQueue(LoginActivity.this);
 
         sp = getSharedPreferences(prefs, Context.MODE_PRIVATE);
 
@@ -147,7 +163,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             public void onCompleted(JSONObject object, GraphResponse response) {
                                 Log.v("LoginActivity", response.toString());
                                 Log.v("LoginActivity JSON", object.toString());
-
                                 // Application code
                                 //Fazer a captura de dados aqui, ja que esta sendo executado assincornamente.
                                 try {
@@ -163,6 +178,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                     edt.putString("sexo",gender);
                                     edt.putString("userId",userId);
                                     edt.commit();
+                                    //callByJsonObjectRequest(name,gender,userId,birthday,email);
 //                                    info.setText("Nome: "+name+
 //                                                "\nEmail: "+email+
 //                                                "\nNascimento: "+birthday+
@@ -177,8 +193,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 parameters.putString("fields","id,name,email,gender,birthday");
                 request.setParameters(parameters);
                 request.executeAsync();
-
-
                 // App code
 
             }
@@ -199,6 +213,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     }
 
+    private void updateWithToken(AccessToken currentAccessToken) {
+        if (currentAccessToken != null) {
+            Intent i = new Intent(this, MainActivity.class);
+            startActivity(i);
+        }
+    }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         callbackManager.onActivityResult(requestCode, resultCode, data);
@@ -206,7 +228,36 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         startActivity(intent);
     }
 
+    public void callByJsonObjectRequest(String nome, String sexo, String iduser, String nasc, String email){
+        params = new HashMap<String, String>();
+        params.put("nome", nome);
+        params.put("sexo", sexo);
+        params.put("nasc", nasc);
+        params.put("email", email);
+        params.put("iduser", iduser);
+        CustomJSONObjectResquest request = new CustomJSONObjectResquest(Request.Method.POST,
+                url,
+                params,
+                new Response.Listener<JSONObject>(){
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.i("Resposta",response.toString());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
 
+                    }
+                });
+
+        request.setTag("tag");
+        rq.add(request);
+    }
+
+
+
+ /*
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
             return;
@@ -215,13 +266,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         getLoaderManager().initLoader(0, null, this);
     }
 
-    /*
+
     @Override
     public void onCreate(Bundle savedInstanceState {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(this);
-    }*/
+    }
 
 
     private boolean mayRequestContacts() {
@@ -248,7 +299,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     /**
      * Callback received when a permissions request has been completed.
-     */
+     *
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -264,7 +315,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Attempts to sign in or register the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
-     */
+     *
     private void attemptLogin() {
         if (mAuthTask != null) {
             return;
@@ -324,7 +375,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     /**
      * Shows the progress UI and hides the login form.
-     */
+     *
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
@@ -415,7 +466,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
-     */
+     *
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mEmail;
@@ -468,5 +519,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
         }
     }
+*/
+
+
 }
 

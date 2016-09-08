@@ -128,7 +128,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         map.setInfoWindowAdapter(this);
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(new LatLng(-1.4749331,-48.4555419),15);
         map.moveCamera(update);
-        map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         map.animateCamera(update, 5000, new GoogleMap.CancelableCallback() {
             @Override
             public void onFinish() {
