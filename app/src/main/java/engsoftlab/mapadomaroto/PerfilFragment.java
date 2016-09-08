@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +22,6 @@ import com.facebook.login.widget.ProfilePictureView;
 
 public class PerfilFragment extends Fragment implements View.OnClickListener{
     private ProfilePictureView profilePictureView;
-    private TextView txt;
     private TextView txtNome;
     private TextView txtSexo;
     private TextView txtNascimento;
@@ -47,7 +47,6 @@ public class PerfilFragment extends Fragment implements View.OnClickListener{
 
         View root = inflater.inflate(R.layout.fragment_perfil,container,false);
 
-        txt = (TextView) root.findViewById(R.id.txtTexto);
         txtNome = (TextView) root.findViewById(R.id.txtNome);
         txtSexo = (TextView) root.findViewById(R.id.txtSexo);
         txtNascimento = (TextView) root.findViewById(R.id.txtNascimento);
@@ -58,11 +57,13 @@ public class PerfilFragment extends Fragment implements View.OnClickListener{
         SharedPreferences sharedPref = getActivity().getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         profilePictureView.setProfileId(sharedPref.getString("userId", ""));
+        //Log.v("Tamanho:", String.valueOf(profilePictureView.getPresetSize()));
+        profilePictureView.setPresetSize(ProfilePictureView.LARGE);
         //txt.setText(sharedPref.getString("userId", ""));
-        txtNome.setText("Nome: "+sharedPref.getString("name",  null));
-        txtEmail.setText("Email :"+sharedPref.getString("email",  null));
-        txtSexo.setText("Sexo :"+sharedPref.getString("sexo", null));
-        txtNascimento.setText("Nascimento :"+sharedPref.getString("nasc", null));
+        txtNome.setText(Html.fromHtml("<strong>Nome:</strong> "+sharedPref.getString("name",  null)));
+        txtEmail.setText(Html.fromHtml("<strong>Email :</strong>"+sharedPref.getString("email",  null)));
+        txtSexo.setText(Html.fromHtml("<strong>Sexo :</strong>"+sharedPref.getString("sexo", null)));
+        txtNascimento.setText(Html.fromHtml("<strong>Nascimento :</strong>"+sharedPref.getString("nasc", null)));
 
         logoutButton = (LoginButton) root.findViewById(R.id.logout_button);
         logoutButton.setOnClickListener(this);
