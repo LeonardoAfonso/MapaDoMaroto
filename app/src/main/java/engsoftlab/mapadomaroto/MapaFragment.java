@@ -69,6 +69,32 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     private Map<String, String> params;
     private RequestQueue rq;
     private String url;
+    private String url2;
+    private ArrayList<Ponto> pto = new ArrayList<>();
+
+
+    private static final LatLng BRISBANE = new LatLng(-27.47093, 153.0235);
+
+    private static final LatLng MELBOURNE = new LatLng(-37.81319, 144.96298);
+
+    private static final LatLng SYDNEY = new LatLng(-33.87365, 151.20689);
+
+    private static final LatLng ADELAIDE = new LatLng(-34.92873, 138.59995);
+
+    private static final LatLng PERTH = new LatLng(-31.952854, 115.857342);
+
+    private GoogleMap mMap;
+
+    private Marker mPerth;
+
+    private Marker mSydney;
+
+    private Marker mBrisbane;
+
+    private Marker mAdelaide;
+
+    private Marker mMelbourne;
+
 
     public static MapaFragment newInstance(){
         MapaFragment fragment = new MapaFragment();
@@ -98,8 +124,14 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.llContainer,mapFragment);
         ft.commit();
-        url = "http://10.0.2.2:8888/MapadoMaroto/";
+
+        url ="http://192.168.1.105:8888/MapadoMaroto/";
+        url2 = "http://192.168.1.105:8888/MapadoMaroto/salvaPonto.php";
+
+        //url = "http://10.0.2.2:8888/MapadoMaroto/";
         rq = Volley.newRequestQueue(getContext());
+        pegarPontos();
+
         return root;
     }
 
@@ -125,12 +157,19 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     @Override
     public void onMapReady(GoogleMap googleMap){
         map = googleMap;
+
+        map.getUiSettings().setMapToolbarEnabled(false);
+        addMarkersToMap();
+        //rq.cancelAll("tag");
+        addPointToMap();
+
         map.setOnMapClickListener(this);
         map.setOnMapLongClickListener(this);
         map.setOnCameraIdleListener(this);
         map.setOnInfoWindowClickListener(this);
         map.setInfoWindowAdapter(this);
-        map.getUiSettings().setMapToolbarEnabled(false);
+        map.getUiSettings().setZoomControlsEnabled(true);
+
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(new LatLng(-1.4749331,-48.4555419),15);
         map.moveCamera(update);
         map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -250,12 +289,14 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
 
         final EditText edtDesc = (EditText) myDialog.findViewById(R.id.edtDesc);
         //final EditText  edtTipo = (EditText) myDialog.findViewById(R.id.edtTipo);
-        final String snpt = "Estado: "+situacaoSpn.getSelectedItem().toString()+"\nDescrição: "+edtDesc.getText().toString();
+
         btnSalvar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(),"Irá pegar as informações e salva-las no servidor",Toast.LENGTH_SHORT).show();
+                final String snpt = "Estado: "+situacaoSpn.getSelectedItem().toString()+"\nDescrição: "+edtDesc.getText().toString();
+                //Toast.makeText(getContext(),"Irá pegar as informações e salva-las no servidor",Toast.LENGTH_SHORT).show();
                 customAddStaticMarker(new LatLng(marker.getPosition().latitude,marker.getPosition().longitude),pontoSpn.getSelectedItem().toString(),snpt,situacaoSpn.getSelectedItem().toString());
+                salvarPontos(new LatLng(marker.getPosition().latitude,marker.getPosition().longitude),snpt,pontoSpn.getSelectedItem().toString(),situacaoSpn.getSelectedItem().toString(),"TESTE");
                 myDialog.dismiss();
                 marker.remove();
                 marker = null;
@@ -293,9 +334,8 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         return null;
     }
 
-    public ArrayList<Ponto> pegarPontos(){
+    public void pegarPontos(){
         params = new HashMap<String, String>();
-        final ArrayList<Ponto> p = new ArrayList<Ponto>();
         CustomJSONArrayRequest request = new CustomJSONArrayRequest(Request.Method.GET,
                 url,
                 params,
@@ -303,18 +343,11 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
                     @Override
                     public void onResponse(JSONArray response) {
                         JSONObject json;
-                        Toast.makeText(getContext(), "Response: "+response, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "Response:Sucesso", Toast.LENGTH_LONG).show();
                         try {
+                            Log.i("JSON","Entrou na iteracao");
                             for (int i=0;i<response.length();i++) {
                                 json = response.getJSONObject(i);
-                                Log.i("JSONArray:", "idPonto: " + String.valueOf(json.getInt("idPonto")));
-                                Log.i("JSONArray:", "Lat: " + String.valueOf(json.getDouble("lat")));
-                                Log.i("JSONArray:", "Lng: " + String.valueOf(json.getDouble("lng")));
-                                Log.i("JSONArray:", "Descricao: " + json.getString("descricaoPonto"));
-                                Log.i("JSONArray:", "Tipo: " + json.getString("tipoPonto"));
-                                Log.i("JSONArray:", "Estado: " + json.getString("estadoPonto"));
-                                Log.i("JSONArray:", "Data Criacao:" + json.getString("dataCriacao"));
-                                Log.i("JSONArray:", "User criacao: " + json.getString("userCriacao"));
                                 Ponto ponto = new Ponto();
                                 ponto.setId(json.getInt("idPonto"));
                                 ponto.setLatLng(new LatLng(json.getDouble("lat"), json.getDouble("lng")));
@@ -323,7 +356,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
                                 ponto.setTipo(json.getString("tipoPonto"));
                                 ponto.setUsercriacao(json.getString("userCriacao"));
                                 //ponto.setDatacriacao(json.getString("dataCriacao"));
-                                p.add(i,ponto);
+                                pto.add(i,ponto);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -338,7 +371,90 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
                 });
         request.setTag("tag");
         rq.add(request);
-        return p;
     }
+
+
+    private void addPointToMap(){
+        for(int i=0;i<pto.size();i++) {
+            //MarkerOptions mo = new MarkerOptions();
+            //mo.position(pto.get(i).getLatLng()).title(pto.get(i).getTipo()).snippet(pto.get(i).getDescricao() + " " + pto.get(i).getEstado());
+            //Log.i("Points: ",pto.get(i).getLatLng().toString()+" "+pto.get(i).getTipo()+" "+pto.get(i).getDescricao());
+            //map.addMarker(mo);
+            customAddStaticMarker(pto.get(i).getLatLng(),pto.get(i).getTipo(),pto.get(i).getDescricao() + " " + pto.get(i).getEstado(),pto.get(i).getEstado());
+        }
+    }
+
+    private void addMarkersToMap() {
+        // Uses a colored icon.
+        mBrisbane = map.addMarker(new MarkerOptions()
+                .position(BRISBANE)
+                .title("Brisbane")
+                .snippet("Population: 2,074,200")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+        // Uses a custom icon with the info window popping out of the center of the icon.
+        mSydney = map.addMarker(new MarkerOptions()
+                .position(SYDNEY)
+                .title("Sydney")
+                .snippet("Population: 4,627,300")
+                //.icon(BitmapDescriptorFactory.fromResource(R.drawable.))
+                .infoWindowAnchor(0.5f, 0.5f));
+
+        // Creates a draggable marker. Long press to drag.
+        mMelbourne = map.addMarker(new MarkerOptions()
+                .position(MELBOURNE)
+                .title("Melbourne")
+                .snippet("Population: 4,137,400")
+                .draggable(true));
+
+        // A few more markers for good measure.
+        mPerth = map.addMarker(new MarkerOptions()
+                .position(PERTH)
+                .title("Perth")
+                .snippet("Population: 1,738,800"));
+        mAdelaide = map.addMarker(new MarkerOptions()
+                .position(ADELAIDE)
+                .title("Adelaide")
+                .snippet("Population: 1,213,000"));
+    }
+
+    public void salvarPontos(LatLng latLng, String descricao, String tipo, String estado, String user){
+        params = new HashMap<>();
+        params.put("userCriacao",user);
+        params.put("lat",String.valueOf(latLng.latitude));
+        params.put("lng",String.valueOf(latLng.longitude));
+        params.put("descricaoPonto",descricao);
+        params.put("tipoPonto", tipo);
+        params.put("estadoPonto",estado);
+        CustomJSONArrayRequest request = new CustomJSONArrayRequest(Request.Method.POST,
+                url2,
+                params,
+                new Response.Listener<JSONArray>(){
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        Toast.makeText(getContext(), "Response:"+response, Toast.LENGTH_LONG).show();
+                        JSONObject json;
+                        try{
+                            json = response.getJSONObject(0);
+                            if(json.has("sit")) {
+                                String sit = json.getString("sit");
+                                Toast.makeText(getContext(), "Response: " + sit, Toast.LENGTH_LONG).show();
+                            }
+                        }catch (JSONException e){
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(getContext(), "Error: "+error.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+        request.setTag("tag");
+        rq.add(request);
+    }
+
+
 
 }
