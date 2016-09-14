@@ -2,6 +2,7 @@ package engsoftlab.mapadomaroto;
 
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -71,7 +72,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     private String url;
     private String url2;
     private ArrayList<Ponto> pto = new ArrayList<>();
-
+    SharedPreferences sharedPr;
 
     private static final LatLng BRISBANE = new LatLng(-27.47093, 153.0235);
 
@@ -109,6 +110,7 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        sharedPr = getContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
         GoogleMapOptions options = new GoogleMapOptions();
         options.zOrderOnTop(true);
         View root = inflater.inflate(R.layout.fragment_mapa,container,false);
@@ -125,8 +127,8 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         ft.replace(R.id.llContainer,mapFragment);
         ft.commit();
 
-        url ="http://192.168.1.105:8888/MapadoMaroto/";
-        url2 = "http://192.168.1.105:8888/MapadoMaroto/salvaPonto.php";
+        url ="/http://200.239.79.211/MapadoMaroto/consultaPontos";
+        url2 = "http://200.239.79.211//MapadoMaroto/salvaPonto.php";
 
         //url = "http://10.0.2.2:8888/MapadoMaroto/";
         rq = Volley.newRequestQueue(getContext());
@@ -186,6 +188,13 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
         });
 
 
+    }
+
+    public boolean exist(){
+        if(sharedPr.contains("last_id")){
+            return false;
+        }else{
+        return true;}
     }
 
     public void customAddMarker(LatLng latlng, String title, String snippet){
@@ -335,7 +344,18 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
     }
 
     public void pegarPontos(){
+        final SharedPreferences.Editor edt = sharedPr.edit();
+
+        if (exist()){
+
+            edt.putString("last_id","0");
+            edt.commit();
+
+        }
+
+
         params = new HashMap<String, String>();
+        params.put("last_id",sharedPr.getString("last_id",null));
         CustomJSONArrayRequest request = new CustomJSONArrayRequest(Request.Method.GET,
                 url,
                 params,
@@ -345,18 +365,27 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback ,OnMapC
                         JSONObject json;
                         Toast.makeText(getContext(), "Response:Sucesso", Toast.LENGTH_LONG).show();
                         try {
-                            Log.i("JSON","Entrou na iteracao");
-                            for (int i=0;i<response.length();i++) {
-                                json = response.getJSONObject(i);
-                                Ponto ponto = new Ponto();
-                                ponto.setId(json.getInt("idPonto"));
-                                ponto.setLatLng(new LatLng(json.getDouble("lat"), json.getDouble("lng")));
-                                ponto.setDescricao(json.getString("descricaoPonto"));
-                                ponto.setEstado(json.getString("estadoPonto"));
-                                ponto.setTipo(json.getString("tipoPonto"));
-                                ponto.setUsercriacao(json.getString("userCriacao"));
-                                //ponto.setDatacriacao(json.getString("dataCriacao"));
-                                pto.add(i,ponto);
+                            json = response.getJSONObject(0);
+                            if(json.has("sit")) {
+                                String sit = json.getString("sit");
+                                Toast.makeText(getContext(), "Response: " + sit, Toast.LENGTH_LONG).show();
+                            }else{
+                                    Log.i("JSON","Entrou na iteracao");
+                                    for (int i=0;i<response.length();i++) {
+                                        json = response.getJSONObject(i);
+                                        Ponto ponto = new Ponto();
+                                        ponto.setId(json.getInt("idPonto"));
+                                        ponto.setLatLng(new LatLng(json.getDouble("lat"), json.getDouble("lng")));
+                                        ponto.setDescricao(json.getString("descricaoPonto"));
+                                        ponto.setEstado(json.getString("estadoPonto"));
+                                        ponto.setTipo(json.getString("tipoPonto"));
+                                        ponto.setUsercriacao(json.getString("userCriacao"));
+                                        //ponto.setDatacriacao(json.getString("dataCriacao"));
+                                        pto.add(i, ponto);
+
+                            }
+                                edt.putString("last_id", String.valueOf(json.getInt("idPonto")));
+                                edt.commit();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
